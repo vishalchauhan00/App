@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Detection App</title>
+    <script type="text/javascript" src="https://unpkg.com/webcam-easy@1.1.1/dist/webcam-easy.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            color: #333;
+            text-align: center;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(to right, #FF8C00, red);
+            color: #fff;
+            margin: 0;
+        }
+
+        form {
+            text-align: center;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        #fileLabel {
+            font-size: 14px;
+            margin-bottom: 10px;
+            margin-top: 5px;
+        }
+
+        label {
+            padding: 10px;
+            background-color: #3498db;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #27ae60;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 10px;
+            color: #333;
+        }
+
+        img {
+            display: block;
+            margin: 20px auto;
+            max-width: 50%;
+            max-height: 80vh;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        #cameraButton {
+            background-color: grey;
+        }
+
+        #videoContainer {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #videoElement {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            border: 10px solid black;
+        }
+
+        #clickButton {
+            margin-top: 5px;
+            background-color: red;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 20px;
+        }
+        #noItemsText {
+            margin-top: 23vh;
+        }
+    </style>
+</head>
+<body>
+    <h1>Food Detection App (22 Classes)</h1>
+    <form action="/" method="post" enctype="multipart/form-data">
+        <label for="fileInput">Choose Image</label>
+        <input type="file" id="fileInput" name="file" onchange="document.getElementById('fileLabel').innerText = this.files[0].name">
+        <span id="fileLabel">No image chosen</span>
+        <button type="submit">Detect Food</button>
+        <input type="hidden" accept="image/*" id="capturedImageData" name="capturedImage">
+    </form>
+
+    <button id="cameraButton" onclick="openCamera()">Open Camera</button>
+    <div id="videoContainer" style="display: none;">
+        <video id="videoElement" autoplay playsinline></video>
+    </div>
+    <button id="clickButton" onclick="clickPhoto()" style="display: none;">Capture</button>
+
+    {% if result_image_path %}
+        {% if objects|length > 0 %}
+            <h2>Image with Detected Food</h2>
+            <img src="{{ result_image_path }}" alt="Result Image">
+
+            <h2>Detected Food Items</h2>
+            <ul>
+                {% for obj in objects %}
+                    <li>{{ objects[obj] }} {{ obj }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <h2 id="noItemsText">No food items detected :(</h2>
+        {% endif %}
+    {% endif %}
+
+    <script>
+        const video = document.getElementById('videoElement');
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        const webcam = new Webcam(video, "environment", canvas);
+
+        function openCamera() {
+            const cameraButton = document.getElementById('cameraButton');
+            const videoContainer = document.getElementById('videoContainer');
+            const clickButton = document.getElementById('clickButton');
+
+            if (cameraButton.innerText === 'Open Camera') {
+                cameraButton.innerText = 'Close Camera';
+                videoContainer.style.display = 'block';
+                clickButton.style.display = 'block';
+                webcam.start();
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+            } else {
+                cameraButton.innerText = 'Open Camera';
+                videoContainer.style.display = 'none';
+                clickButton.style.display = 'none';
+                webcam.stop();
+            }
+        }
+
+        function clickPhoto() {
+            let pic = webcam.snap();
+            document.getElementById('capturedImageData').value = pic;
+            document.getElementById('fileLabel').innerText = 'Captured Photo';
+            // document.querySelector('form').submit();
+        }
+    </script>
+
+</body>
+</html>
